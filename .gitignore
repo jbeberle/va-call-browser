@@ -1,0 +1,28 @@
+# Gradle
+/build/
+/packages/rn-tester/android/app/build/
+/packages/rn-tester/android/app/gradle/
+/packages/rn-tester/android/app/gradlew
+/packages/rn-tester/android/app/gradlew.bat
+/ReactAndroid/build/
+/ReactAndroid/gradle/
+/ReactAndroid/gradlew
+/ReactAndroid/gradlew.bat
+
+# Node
+node_modules
+*.log
+.nvm
+/bots/node_modules/
+
+# react-native-codegen
+/packages/react-native-codegen/lib
+/ReactCommon/fabric/components/rncore/
+/schema-native-modules.json
+/schema-rncore.json
+
+# node.js
+#
+npm-debug.log
+yarn-error.log
+
