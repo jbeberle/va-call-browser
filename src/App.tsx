@@ -46,8 +46,8 @@ function App() {
             await delay(1000);
             var newMessage:string | null = getNewMessage();
             if(newMessage != null) {
-                console.log("setting message to " + newMessage);
-                sendMessage("Reply to chat!!")
+                console.log("setting message to " + newMessage)
+                // sendMessage("Reply to chat!!")
             }
         }
         console.log("done")
@@ -59,6 +59,7 @@ function App() {
         checkNewMessage();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
 
     socket.addEventListener('message', (ev) => {
         const data: SocketMessage = JSON.parse(ev.data)
@@ -104,7 +105,7 @@ function App() {
                           alignItems="center"
                           sx={{minHeight: '100vh', minWidth: '100%'}}
                           spacing={2}>
-                        <CallPreview callEntries={callList} setAcceptedCall={setAcceptedCall}/>
+                        <CallPreview callEntries={callList} setAcceptedCall={setAcceptedCall} channel={webRtcChannel}/>
                     </Grid>
                 </Box>
             </ThemeProvider>

@@ -1,7 +1,9 @@
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
-import {Box, CssBaseline, Grid, ThemeProvider, Typography} from "@mui/material";
+import {Box, Button, CssBaseline, Grid, TextField, ThemeProvider, Typography} from "@mui/material";
 import {theme} from "./assets/themes";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
+import {MessagesInfo} from "./MessagesInfo";
+import {WebRtcChannel} from "./webrtc/WebRtcChannel";
 
 export interface CallEntry {
     email: string
@@ -17,17 +19,61 @@ export interface CallEntry {
 export type CallEntryType = {
     callEntries: CallEntry[],
     setAcceptedCall: (callerId: number) => void
+    channel: WebRtcChannel
 }
 
 
 const CallPreview = (props: CallEntryType) => {
+    const messages = useRef<MessagesInfo[]>([]);
+    const dummyRef = useRef<HTMLDivElement>(null);
+    const bodyRef = useRef<HTMLDivElement>(null);
 
     const [rowSelected, setRowSelected] = useState<boolean>(false);
+    const [currentMessage, setCurrentMessage] = useState<string>("");
+    const [sendUserResponse, setSendUserResponse] = useState<MessagesInfo>({message: "", sender: ""});
+    const [updateState, setUpdateState] = useState<number>(0)
+    const webRtcChannel:WebRtcChannel = props.channel
 
-    const onRowsSelectionHandler = (ids:any[]) => {
+
+    useEffect(() => {
+        console.log("in useEffect:  messages = ")
+        console.log(messages)
+        if (messages.current.length === 0) {
+            messages.current = ([
+                {
+                    purpose: "introduction",
+                    message:
+                        "Hi there.  Welcome to the VA Assistant.  How can I help you?",
+                    sender: "bot"
+                }
+            ]);
+            setUpdateState(Math.random())
+        } else {
+            console.log("Else clause")
+            console.log(sendUserResponse)
+            let tempArray = [...messages.current];
+            if (typeof sendUserResponse === 'string') {
+                tempArray.push({message: sendUserResponse, sender: "user"});
+            } else {
+                tempArray.push(sendUserResponse)
+            }
+            console.log("tempArray=")
+            console.log(tempArray)
+            messages.current = tempArray;
+            setUpdateState(Math.random())
+
+            // setTimeout(() => {
+            //     let temp2 = [...tempArray];
+            //     // temp2.push(botResponse);
+            //     // messages.current = temp2;
+            // }, 1000);
+        }
+    }, [sendUserResponse]);
+
+    const onRowsSelectionHandler = (ids: any[]) => {
         console.log("onRowsSelectionHandler!")
         const selectedRowsData = ids.map((id) => rows.find((row) => row.id === id));
-        if(selectedRowsData !== undefined && selectedRowsData.length > 0) {
+        if (selectedRowsData !== undefined && selectedRowsData.length > 0) {
             props.setAcceptedCall((selectedRowsData as any[])[0].id)
             console.log(selectedRowsData);
             setRowSelected(true)
@@ -103,6 +149,24 @@ const CallPreview = (props: CallEntryType) => {
         }
     })
 
+
+    async function sendMessage(message: string) {
+        webRtcChannel.sendSocketMessage({event:"chat", from:"2", to:"`", message:message})
+    }
+
+
+
+    const handleSend = (ev: any) => {
+        ev.preventDefault()
+        alert(`msg=${currentMessage}`);
+        messages.current.push({message:currentMessage, sender:"callcenter"})
+        setSendUserResponse!({message:currentMessage, sender:"callcenter"})
+        sendMessage(currentMessage)
+        setCurrentMessage('');
+    }
+
+
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline/>
@@ -119,7 +183,8 @@ const CallPreview = (props: CallEntryType) => {
                             flexDirection: "column",
                             alignItems: "center",
                             paddingBottom: "40px"
-                        }}>The preview contains only pending calls.   Click on checkbox to start a conversation.</Typography>
+                        }}>The preview contains only pending calls. Click on checkbox to start a
+                            conversation.</Typography>
                     </Box>
                 </Grid>
                 <Grid item xs={12}>
@@ -141,18 +206,68 @@ const CallPreview = (props: CallEntryType) => {
                         />
                     </Box>
                 </Grid>
-                {rowSelected ?
-                <Grid item xs={12}>
-                    <Box sx={{background: '#ffffff', paddingTop: "40px"}}>
-                        <Typography color="black" variant="h6" sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            paddingBottom: "40px"
-                        }}>This pane contains the chat to selected call.</Typography>
-                    </Box>
-                </Grid>
-                : <></>}
+                {false ?
+                    <>
+                        <Grid item xs={12}>
+                            <Box sx={{background: '#ffffff', paddingTop: "40px", marginBottom: "20px"}}>
+                                <Typography color="black" variant="h6" sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    paddingBottom: "40px"
+                                }}>
+                                </Typography>
+                                <div className="message-container" ref={bodyRef} key="ChatID">
+                                    {
+                                        messages.current.map(chat => {
+                                        console.log("chat=")
+                                        console.log(chat)
+                                        return (
+                                        <div key={chat.message}>
+                                            <div className={`message ${chat.sender}`}>
+                                                <p>{chat.message}</p>
+                                            </div>
+                                            {chat.options ? (
+                                                <div className="options">
+                                                    <div>
+                                                        <i className="far fa-hand-pointer"></i>
+                                                    </div>
+                                                </div>
+                                            ) : null}
+                                            <div ref={dummyRef} className="dummy-div"></div>
+                                        </div>
+                                    )})}
+                                </div>
+                                {/*<label font-size="4px">*/}
+                                {/*<input type="text" name="name" value={formData.message} />*/}
+                                {/*<form  noValidate autoComplete="off">*/}
+                                {/*</form>*/}
+                                {/*</label>*/}
+                            </Box>
+                        </Grid>
+                        <Grid item xs={3}/>
+                        <Grid item xs={5}>
+                            <TextField
+                                fullWidth
+                                hiddenLabel
+                                id="filled-hidden-label-small"
+                                placeholder="Chat Text"
+                                defaultValue=""
+                                variant="filled"
+                                size="small"
+                                value={currentMessage}
+                                onChange={(e) => {
+                                    setCurrentMessage(e.target.value);
+                                }}
+                                // helperText="Chat Text to Send"
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <Button sx={{marginLeft: "20px"}} variant="contained" onClick={handleSend}>Send</Button>
+                        </Grid>
+
+                    </>
+                    : <></>}
             </Grid>
         </ThemeProvider>
     )
