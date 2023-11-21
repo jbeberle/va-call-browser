@@ -4,7 +4,6 @@ import {theme} from "./assets/themes";
 import {useEffect, useRef, useState} from "react";
 import {MessagesInfo} from "./MessagesInfo";
 import {WebRtcChannel} from "./webrtc/WebRtcChannel";
-import * as api from "./communication/api";
 import {getCalls} from "./communication/VetCallApi";
 
 export interface CallEntry {
@@ -36,17 +35,30 @@ const CallPreview = (props: CallEntryType) => {
     const [sendUserResponse, setSendUserResponse] = useState<MessagesInfo>({message: "", sender: ""});
     const [updateState, setUpdateState] = useState<number>(0)
     const webRtcChannel:WebRtcChannel = props.channel
+    let done = false;
+
+    function delay(ms: number): Promise<typeof setTimeout> {
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    }
 
     const getMessages = async () => {
-        setRows(await getCalls().then((result) => {console.log("CallEntries:"); console.log(result); return result}) as CallEntry[]);
+        for(var i = 0; i<3000 && !done; i++) {
+            await delay(1000);
+            setRows(await getCalls().then((result) => {
+                console.log("CallEntries:");
+                console.log(result);
+                return result
+            }) as CallEntry[]);
+        }
     }
 
      useEffect(() => {
         getMessages();
         return () => {
-
+           done=true;
         }
     }, []);
+
 
 
     useEffect(() => {
