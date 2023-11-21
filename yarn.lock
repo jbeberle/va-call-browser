@@ -2411,6 +2411,11 @@
   resolved "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.5.tgz"
   integrity sha512-I3pkr8j/6tmQtKV/ZzHtuaqYSQvyjGRKH4go60Rr0IDLlFxuRT5V32uvB1mecM5G1EVAUyF/4r4QZ1GHgz+mxA==
 
+"@types/underscore@^1.11.15":
+  version "1.11.15"
+  resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.11.15.tgz#29c776daecf6f1935da9adda17509686bf979947"
+  integrity sha512-HP38xE+GuWGlbSRq9WrZkousaQ7dragtZCruBVMi0oX1migFZavZ3OROKHSkNp/9ouq82zrWtZpg18jFnVN96g==
+
 "@types/ws@^8.5.5":
   version "8.5.8"
   resolved "https://registry.npmjs.org/@types/ws/-/ws-8.5.8.tgz"

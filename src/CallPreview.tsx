@@ -4,11 +4,14 @@ import {theme} from "./assets/themes";
 import {useEffect, useRef, useState} from "react";
 import {MessagesInfo} from "./MessagesInfo";
 import {WebRtcChannel} from "./webrtc/WebRtcChannel";
+import * as api from "./communication/api";
+import {getCalls} from "./communication/VetCallApi";
 
 export interface CallEntry {
+    id: string
     email: string
-    name: string
-    currentScreen: string
+    fullName: string
+    screen: string
     branch: string
     service: string
     claimId: string
@@ -33,6 +36,17 @@ const CallPreview = (props: CallEntryType) => {
     const [sendUserResponse, setSendUserResponse] = useState<MessagesInfo>({message: "", sender: ""});
     const [updateState, setUpdateState] = useState<number>(0)
     const webRtcChannel:WebRtcChannel = props.channel
+
+    const getMessages = async () => {
+        setRows(await getCalls().then((result) => {console.log("CallEntries:"); console.log(result); return result}) as CallEntry[]);
+    }
+
+     useEffect(() => {
+        getMessages();
+        return () => {
+
+        }
+    }, []);
 
 
     useEffect(() => {
@@ -94,7 +108,7 @@ const CallPreview = (props: CallEntryType) => {
             type: 'string',
         },
         {
-            field: 'callerName',
+            field: 'fullName',
             headerName: 'Caller Name',
             width: 280,
         },
@@ -109,7 +123,7 @@ const CallPreview = (props: CallEntryType) => {
             width: 100,
         },
         {
-            field: 'currentScreen',
+            field: 'screen',
             headerName: 'Current Screen',
             type: 'string',
             width: 150,
@@ -134,20 +148,21 @@ const CallPreview = (props: CallEntryType) => {
         },
     ];
 
+    const [rows, setRows] = useState<CallEntry[]>([]);
 
-    const rows = props.callEntries.map((entry, index) => {
-        return {
-            id: index,
-            email: entry.email,
-            callerName: entry.name,
-            branch: entry.branch,
-            currentScreen: entry.currentScreen,
-            service: entry.service,
-            claimId: entry.claimId,
-            claimType: entry.claimType,
-            claimPhase: entry.claimPhase,
-        }
-    })
+    // setRows(props.callEntries.map((entry, index) => {
+    //     return {
+    //         id: index,
+    //         email: entry.email,
+    //         callerName: entry.name,
+    //         branch: entry.branch,
+    //         currentScreen: entry.currentScreen,
+    //         service: entry.service,
+    //         claimId: entry.claimId,
+    //         claimType: entry.claimType,
+    //         claimPhase: entry.claimPhase,
+    //     }
+    // }));
 
 
     async function sendMessage(message: string) {
@@ -165,7 +180,8 @@ const CallPreview = (props: CallEntryType) => {
         setCurrentMessage('');
     }
 
-
+    console.log("before render: messages=")
+    console.log(messages.current)
 
     return (
         <ThemeProvider theme={theme}>
@@ -206,7 +222,7 @@ const CallPreview = (props: CallEntryType) => {
                         />
                     </Box>
                 </Grid>
-                {false ?
+                {true ?
                     <>
                         <Grid item xs={12}>
                             <Box sx={{background: '#ffffff', paddingTop: "40px", marginBottom: "20px"}}>

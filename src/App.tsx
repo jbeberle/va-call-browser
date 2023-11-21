@@ -14,7 +14,7 @@ type SocketMessage = {
     email: string
     name: string
     branch: string
-    currentScreen: string
+    screen: string
     service: string
     claimId: string
     claimType: string
@@ -68,10 +68,11 @@ function App() {
             console.log(data)
             console.log(ev.data)
             setCallList([{
+                id: "1",
                 email: data.email,
-                name: data.name,
+                fullName: data.name,
                 branch: data.branch,
-                currentScreen: data.currentScreen,
+                screen: data.screen,
                 service: data.service,
                 claimId: data.claimId,
                 claimType: data.claimType,
