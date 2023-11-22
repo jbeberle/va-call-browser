@@ -1,10 +1,8 @@
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
-import {Box, Button, CssBaseline, Grid, TextField, ThemeProvider, Typography} from "@mui/material";
-import {theme} from "./assets/themes";
-import {useEffect, useRef, useState} from "react";
-import {MessagesInfo} from "./MessagesInfo";
-import {WebRtcChannel} from "./webrtc/WebRtcChannel";
-import {getCalls} from "./communication/VetCallApi";
+import {Box, CssBaseline, Grid, ThemeProvider, Typography} from "@mui/material";
+import {useEffect, useState} from "react";
+import {getCalls} from "../communication/VetCallApi";
+import {theme} from "../assets/themes";
 
 export interface CallEntry {
     id: string
@@ -22,96 +20,46 @@ export interface CallEntry {
 
 export type CallEntryType = {
     callEntries: CallEntry[],
-    setAcceptedCall: (callerId: number) => void
-    channel: WebRtcChannel
 }
 
 
 const CallPreview = (props: CallEntryType) => {
-    const messages = useRef<MessagesInfo[]>([]);
-    const dummyRef = useRef<HTMLDivElement>(null);
-    const bodyRef = useRef<HTMLDivElement>(null);
 
     const [rowSelected, setRowSelected] = useState<boolean>(false);
-    const [currentMessage, setCurrentMessage] = useState<string>("");
-    const [sendUserResponse, setSendUserResponse] = useState<MessagesInfo>({message: "", sender: ""});
     const [updateState, setUpdateState] = useState<number>(0)
-    const webRtcChannel:WebRtcChannel = props.channel
     let done = false;
 
     function delay(ms: number): Promise<typeof setTimeout> {
-        return new Promise( resolve => setTimeout(resolve, ms) );
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     const getMessages = async () => {
-        for(var i = 0; i<3000 && !done; i++) {
+        for (var i = 0; i < 3000 && !done; i++) {
             await delay(1000);
             let calls = await getCalls().then((result) => {
-                console.log("CallEntries:");
-                console.log(result);
                 return result
             }) as any
-            console.log("type of calls is")
-            console.log(typeof calls)
-            if(typeof calls == 'object') {
+            if (typeof calls == 'object') {
                 setRows(calls as CallEntry[]);
-            }
-            else if (typeof calls == 'string') {
+            } else if (typeof calls == 'string') {
                 done = true;
             }
         }
     }
 
-     useEffect(() => {
-         done=false;
+    useEffect(() => {
+        done = false;
         getMessages();
         return () => {
-           done=true;
+            done = true;
         }
     }, []);
 
-
-
-    useEffect(() => {
-        console.log("in useEffect:  messages = ")
-        console.log(messages)
-        if (messages.current.length === 0) {
-            messages.current = ([
-                {
-                    purpose: "introduction",
-                    message:
-                        "Hi there.  Welcome to the VA Assistant.  How can I help you?",
-                    sender: "bot"
-                }
-            ]);
-            setUpdateState(Math.random())
-        } else {
-            console.log("Else clause")
-            console.log(sendUserResponse)
-            let tempArray = [...messages.current];
-            if (typeof sendUserResponse === 'string') {
-                tempArray.push({message: sendUserResponse, sender: "user"});
-            } else {
-                tempArray.push(sendUserResponse)
-            }
-            console.log("tempArray=")
-            console.log(tempArray)
-            messages.current = tempArray;
-            setUpdateState(Math.random())
-
-            // setTimeout(() => {
-            //     let temp2 = [...tempArray];
-            //     // temp2.push(botResponse);
-            //     // messages.current = temp2;
-            // }, 1000);
-        }
-    }, [sendUserResponse]);
 
     const onRowsSelectionHandler = (ids: any[]) => {
         console.log("onRowsSelectionHandler!")
         const selectedRowsData = ids.map((id) => rows.find((row) => row.id === id));
         if (selectedRowsData !== undefined && selectedRowsData.length > 0) {
-            props.setAcceptedCall((selectedRowsData as any[])[0].id)
             console.log(selectedRowsData);
             setRowSelected(true)
         }
@@ -185,38 +133,6 @@ const CallPreview = (props: CallEntryType) => {
 
     const [rows, setRows] = useState<CallEntry[]>([]);
 
-    // setRows(props.callEntries.map((entry, index) => {
-    //     return {
-    //         id: index,
-    //         email: entry.email,
-    //         callerName: entry.name,
-    //         branch: entry.branch,
-    //         currentScreen: entry.currentScreen,
-    //         service: entry.service,
-    //         claimId: entry.claimId,
-    //         claimType: entry.claimType,
-    //         claimPhase: entry.claimPhase,
-    //     }
-    // }));
-
-
-    async function sendMessage(message: string) {
-        webRtcChannel.sendSocketMessage({event:"chat", from:"2", to:"`", message:message})
-    }
-
-
-
-    const handleSend = (ev: any) => {
-        ev.preventDefault()
-        alert(`msg=${currentMessage}`);
-        messages.current.push({message:currentMessage, sender:"callcenter"})
-        setSendUserResponse!({message:currentMessage, sender:"callcenter"})
-        sendMessage(currentMessage)
-        setCurrentMessage('');
-    }
-
-    console.log("before render: messages=")
-    console.log(messages.current)
 
     return (
         <ThemeProvider theme={theme}>

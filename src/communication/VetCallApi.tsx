@@ -1,4 +1,4 @@
-import {CallEntry} from "../CallPreview";
+import {CallEntry} from "../components/CallPreview";
 import httpClient from "./httpClient";
 
 type GetCallsResponse = {
