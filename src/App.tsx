@@ -16,6 +16,8 @@ type SocketMessage = {
     branch: string
     screen: string
     service: string
+    callReason: string
+    callClaimDescription: string
     claimId: string
     claimType: string
     claimPhase: string
@@ -74,6 +76,8 @@ function App() {
                 branch: data.branch,
                 screen: data.screen,
                 service: data.service,
+                callReason: data.callReason,
+                callClaimDescription: data.callClaimDescription,
                 claimId: data.claimId,
                 claimType: data.claimType,
                 claimPhase: data.claimPhase

@@ -13,6 +13,8 @@ export interface CallEntry {
     screen: string
     branch: string
     service: string
+    callReason: string
+    callClaimDescription: string
     claimId: string
     claimType: string
     claimPhase: string
@@ -44,15 +46,24 @@ const CallPreview = (props: CallEntryType) => {
     const getMessages = async () => {
         for(var i = 0; i<3000 && !done; i++) {
             await delay(1000);
-            setRows(await getCalls().then((result) => {
+            let calls = await getCalls().then((result) => {
                 console.log("CallEntries:");
                 console.log(result);
                 return result
-            }) as CallEntry[]);
+            }) as any
+            console.log("type of calls is")
+            console.log(typeof calls)
+            if(typeof calls == 'object') {
+                setRows(calls as CallEntry[]);
+            }
+            else if (typeof calls == 'string') {
+                done = true;
+            }
         }
     }
 
      useEffect(() => {
+         done=false;
         getMessages();
         return () => {
            done=true;
@@ -114,14 +125,20 @@ const CallPreview = (props: CallEntryType) => {
             width: 50
         },
         {
+            field: 'fullName',
+            headerName: 'Caller Name',
+            width: 280,
+        },
+        {
             field: 'email',
             headerName: 'Email Address',
             width: 280,
             type: 'string',
         },
         {
-            field: 'fullName',
-            headerName: 'Caller Name',
+            field: 'callReason',
+            headerName: 'Call Reason',
+            type: 'string',
             width: 280,
         },
         {
@@ -137,6 +154,12 @@ const CallPreview = (props: CallEntryType) => {
         {
             field: 'screen',
             headerName: 'Current Screen',
+            type: 'string',
+            width: 150,
+        },
+        {
+            field: 'callClaimDescription',
+            headerName: 'Claim Description',
             type: 'string',
             width: 150,
         },
@@ -234,68 +257,6 @@ const CallPreview = (props: CallEntryType) => {
                         />
                     </Box>
                 </Grid>
-                {true ?
-                    <>
-                        <Grid item xs={12}>
-                            <Box sx={{background: '#ffffff', paddingTop: "40px", marginBottom: "20px"}}>
-                                <Typography color="black" variant="h6" sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    paddingBottom: "40px"
-                                }}>
-                                </Typography>
-                                <div className="message-container" ref={bodyRef} key="ChatID">
-                                    {
-                                        messages.current.map(chat => {
-                                        console.log("chat=")
-                                        console.log(chat)
-                                        return (
-                                        <div key={chat.message}>
-                                            <div className={`message ${chat.sender}`}>
-                                                <p>{chat.message}</p>
-                                            </div>
-                                            {chat.options ? (
-                                                <div className="options">
-                                                    <div>
-                                                        <i className="far fa-hand-pointer"></i>
-                                                    </div>
-                                                </div>
-                                            ) : null}
-                                            <div ref={dummyRef} className="dummy-div"></div>
-                                        </div>
-                                    )})}
-                                </div>
-                                {/*<label font-size="4px">*/}
-                                {/*<input type="text" name="name" value={formData.message} />*/}
-                                {/*<form  noValidate autoComplete="off">*/}
-                                {/*</form>*/}
-                                {/*</label>*/}
-                            </Box>
-                        </Grid>
-                        <Grid item xs={3}/>
-                        <Grid item xs={5}>
-                            <TextField
-                                fullWidth
-                                hiddenLabel
-                                id="filled-hidden-label-small"
-                                placeholder="Chat Text"
-                                defaultValue=""
-                                variant="filled"
-                                size="small"
-                                value={currentMessage}
-                                onChange={(e) => {
-                                    setCurrentMessage(e.target.value);
-                                }}
-                                // helperText="Chat Text to Send"
-                            />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <Button sx={{marginLeft: "20px"}} variant="contained" onClick={handleSend}>Send</Button>
-                        </Grid>
-
-                    </>
-                    : <></>}
             </Grid>
         </ThemeProvider>
     )
